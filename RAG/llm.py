@@ -7,7 +7,7 @@ load_dotenv()
 
 def get_llm():
     return ChatGoogleGenerativeAI(
-        model="gemini-2.0-flash-exp",
+        model="gemini-2.5-flash",
         google_api_key = os.getenv("GOOGLE_API_KEY"),
         temperature = 0.7
     )
@@ -20,7 +20,9 @@ def test_llm():
     response = llm.invoke("what the story behind cleopatra?")
     print(response.content)
 
+
 # run this if the function works 
+
 if __name__ == "__main__":
     test_llm()
 
