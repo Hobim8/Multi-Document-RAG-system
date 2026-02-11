@@ -12,6 +12,7 @@ def load_pdf(file_path: str) -> List[Document]:
     documents = loader.load()
     return documents
 
+#split the document into smaller chunks for better processing for LLM 
 def split_document(
         document: List[Document],
         chunk_size: int = 1000,
@@ -24,4 +25,12 @@ def split_document(
     )
     chunks = text_splitter.split_documents(document)
     return chunks 
+
+
+# combine the loading and splitting into one function so it will be a clean pipeline for processing the document 
+def process_document(file_path: str) -> List[Document]:
+    documents = load_pdf(file_path)
+    chunks = split_document(documents)
+    return chunks
+
 
