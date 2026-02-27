@@ -6,6 +6,7 @@ from prompts import SYSTEM_PROMPT
 
 load_dotenv()
 
+
 def get_llm():
     return ChatGoogleGenerativeAI(
         model="gemini-2.5-flash",
