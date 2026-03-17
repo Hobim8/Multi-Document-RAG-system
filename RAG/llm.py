@@ -1,7 +1,7 @@
 import os 
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
-from prompts import SYSTEM_PROMPT
+from .prompts import SYSTEM_PROMPT
 
 
 load_dotenv()
@@ -21,7 +21,7 @@ def ask_question(question: str, context: str = "") -> str:
     return response.content
 
 
-def test_llm():
+#def test_llm():
     print("TEST 1: With Context ")
     context = "Cleopatra was the last pharaoh of Egypt, ruling from 51-30 BC."
     answer = ask_question("Who was Cleopatra?", context)
@@ -32,7 +32,9 @@ def test_llm():
     answer = ask_question("What is the story behind Cleopatra?", context="")
     print(answer)
 
-if __name__ == "__main__":
+#if __name__ == "__main__":
     test_llm()
+
+
 
 

@@ -15,7 +15,8 @@ venv/
 data/pdfs/*.pdf
 
 # Vector database
-chroma_db/
+chromaDB/
+*.db
 
 # IDE
 .vscode/
@@ -27,3 +28,4 @@ chroma_db/
 # PDF files
 pdfs/
 *.pdf
+
