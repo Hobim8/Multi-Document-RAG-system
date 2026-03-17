@@ -6,7 +6,7 @@ from rag.llm import ask_question
 def test_rag_pipeline():
 
     # step 1: process the document 
-    document_path = "",
+    document_path = r"C:\Users\Xybascem1\Multi Document RAG system\pdfs\sample.pdf"
     chunks = process_document(document_path)
 
     # step 2: create vector store 
