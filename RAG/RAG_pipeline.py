@@ -13,7 +13,7 @@ def test_rag_pipeline():
     vector_store =  create_vector_store(chunks)
 
     # step 3: test with query 
-    query = ""
+    query = "what is the main topic of the document?"
 
     # search for relevant chunks 
     results = search_documents(query, vector_store, k=3)
