@@ -56,7 +56,7 @@ def add_documents_to_store(chunks: List[Document], filename: str, persist_direct
     return vector_store  
 
 
-def delete_documents_by_source(filename: str, persist_directory: str = "chromaDB"):  # Changed to chromaDB
+def delete_documents_by_source(filename: str, persist_directory: str = "chromaDB"):  
     """
     Delete all chunks from a specific source file
     
