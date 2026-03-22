@@ -16,7 +16,7 @@ def get_embeddings():
 def create_vector_store(chunks: List[Document], persist_directory: str = "chromaDB"):  
     embeddings = get_embeddings()
     vector_store = Chroma.from_documents(
-        documents=chunks,  #
+        documents=chunks,  
         embedding=embeddings,
         persist_directory=persist_directory
     )
