@@ -93,7 +93,7 @@ async def health_check():
     return {"status": "ok", "message": "API is running"}
 
 
-@app.get("/upload-pdfs", response_model=UploadResponse)
+@app.post("/upload-pdfs", response_model=UploadResponse)
 async def upload_pdfs(file: UploadFile = File(...)):
     """
     Upload and process a PDF document
@@ -136,70 +136,71 @@ async def upload_pdfs(file: UploadFile = File(...)):
 
 
 @app.post("/query", response_model=QueryResponse)
-async def query_document (query:QueryRequest):
+async def query_document(query: QueryRequest):
     """
-    Ask a question about the uploaded document 
+    Ask a question about the uploaded document
 
-    - Searches vector database for relevant chunks 
+    - Searches vector database for relevant chunks
     - Generates answers using LLM
     - Returns answer with source information
-    
+
     """
     try:
         if not request.question.strip():
             raise HTTPException(status_code=400, detail="Question cannot be empty")
-        
+
         if not os.path.exists("chroma_db"):
             raise HTTPException(
-                status_code= 404, detail="No document upload yet. Please upload a PDF first"
+                status_code=404,
+                detail="No document upload yet. Please upload a PDF first",
             )
-        
-        #load vector store and search 
-        vector_store=load_vector_store
-        results= search_documents(request.question, vector_store, k=request.top_k)
+
+        # load vector store and search
+        vector_store = load_vector_store
+        results = search_documents(request.question, vector_store, k=request.top_k)
 
         if not results:
             raise HTTPException(
-                status_code= 404, detail="No relevant information found in document"
+                status_code=404, detail="No relevant information found in document"
             )
-        
-        #combine chunk with context 
+
+        # combine chunk with context
         context = "\n\n".join([doc.page_content for doc in results])
 
-        #get answer from LLM
+        # get answer from LLM
         answer = ask_question(request.question, context)
 
         logger.info(f"Answered query: {request.question[:50]}...")
 
         return QueryResponse(
-            question= request.question,
-            answer= answer,
-            sources_used= len(results)
+            question=request.question, answer=answer, sources_used=len(results)
         )
-    
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error querying documents: {str(e)}")
-        raise HTTPException (status_code=500, detail=f"Error querying documents: {str(e)}")
-    
+        raise HTTPException(
+            status_code=500, detail=f"Error querying documents: {str(e)}"
+        )
 
     @app.get("/documents", response_model=List[DocumentInfo])
     async def list_documents():
         """
         List all uploaded PDF documents
-    
+
         """
 
-        try: 
+        try:
             sources = list_sources()
             return [DocumentInfo(filename=source) for source in sources]
-        
+
         except Exception as e:
             logger.error(f"Error listing documents: {str(e)}")
-            raise HTTPException (status_code=500, detail=f"Error listing documents: {str(e)}")
-        
-        
+            raise HTTPException(
+                status_code=500, detail=f"Error listing documents: {str(e)}"
+            )
+
     @app.delete("/documents/{filename}", response_model=DeleteResponse)
     async def delete_document(filename: str):
         """
@@ -207,34 +208,36 @@ async def query_document (query:QueryRequest):
 
         - Removes PDF file from storage
         - Removes embeddings from vector database
-    
+
         """
 
-        try: 
+        try:
             file_path = os.path.join(UPLOAD_DIR, filename)
 
-            #delete from vector store
+            # delete from vector store
             chunks_deleted = delete_documents_by_source(filename)
 
-            #delete physical file 
+            # delete physical file
             if os.path.exists(file_path):
                 os.remove(file_path)
-                logger,info(f"Deleted file: {filename}")
-            
+                logger, info(f"Deleted file: {filename}")
+
             if chunks_deleted == 0 and not os.path.exists(file_path):
-                raise HTTPException(status_code=404, detail=f"Document '{filename}' not found")
-            
+                raise HTTPException(
+                    status_code=404, detail=f"Document '{filename}' not found"
+                )
+
             return DeleteResponse(
                 status="success",
                 filename=filename,
                 chunks_deleted=chunks_deleted,
-                message=f"Successfully deleted {filename}"
+                message=f"Successfully deleted {filename}",
             )
-        
-        except HTTPException:
-            raise 
-        except Exception as e:
-            logger.error (f"Error deleting document: {str(e)}")
-            raise HTTPException (status_code=500, detail=f"Error deleting document: {str(e)}")
-        
 
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error deleting document: {str(e)}")
+            raise HTTPException(
+                status_code=500, detail=f"Error deleting document: {str(e)}"
+            )
