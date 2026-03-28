@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 app = FastAPI(
-    title="Multi-Document RAG System",
+    title="PDF RAG System API",
     description="Upload PDF files and query them using RAG",
     version="1.0.0",
 )
@@ -184,60 +184,60 @@ async def query_document(query: QueryRequest):
             status_code=500, detail=f"Error querying documents: {str(e)}"
         )
 
-    @app.get("/documents", response_model=List[DocumentInfo])
-    async def list_documents():
-        """
-        List all uploaded PDF documents
+@app.get("/documents", response_model=List[DocumentInfo])
+async def list_documents():
+    """
+    List all uploaded PDF documents
 
-        """
+    """
 
-        try:
-            sources = list_sources()
-            return [DocumentInfo(filename=source) for source in sources]
+    try:
+        sources = list_sources()
+        return [DocumentInfo(filename=source) for source in sources]
 
-        except Exception as e:
-            logger.error(f"Error listing documents: {str(e)}")
-            raise HTTPException(
-                status_code=500, detail=f"Error listing documents: {str(e)}"
+    except Exception as e:
+        logger.error(f"Error listing documents: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error listing documents: {str(e)}"
             )
 
-    @app.delete("/documents/{filename}", response_model=DeleteResponse)
-    async def delete_document(filename: str):
-        """
-        Delete a PDF document and its embeddings
+@app.delete("/documents/{filename}", response_model=DeleteResponse)
+async def delete_document(filename: str):
+    """
+    Delete a PDF document and its embeddings
 
-        - Removes PDF file from storage
-        - Removes embeddings from vector database
+    - Removes PDF file from storage
+    - Removes embeddings from vector database
 
-        """
+    """
 
-        try:
-            file_path = os.path.join(UPLOAD_DIR, filename)
+    try:
+        file_path = os.path.join(UPLOAD_DIR, filename)
 
-            # delete from vector store
-            chunks_deleted = delete_documents_by_source(filename)
+        # delete from vector store
+        chunks_deleted = delete_documents_by_source(filename)
 
-            # delete physical file
-            if os.path.exists(file_path):
-                os.remove(file_path)
-                logger, info(f"Deleted file: {filename}")
+        # delete physical file
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        logger, info(f"Deleted file: {filename}")
 
-            if chunks_deleted == 0 and not os.path.exists(file_path):
-                raise HTTPException(
-                    status_code=404, detail=f"Document '{filename}' not found"
+        if chunks_deleted == 0 and not os.path.exists(file_path):
+            raise HTTPException(
+                status_code=404, detail=f"Document '{filename}' not found"
                 )
 
-            return DeleteResponse(
-                status="success",
-                filename=filename,
-                chunks_deleted=chunks_deleted,
-                message=f"Successfully deleted {filename}",
+        return DeleteResponse(
+            status="success",
+            filename=filename,
+            chunks_deleted=chunks_deleted,
+            message=f"Successfully deleted {filename}",
             )
 
-        except HTTPException:
-            raise
-        except Exception as e:
-            logger.error(f"Error deleting document: {str(e)}")
-            raise HTTPException(
-                status_code=500, detail=f"Error deleting document: {str(e)}"
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting document: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error deleting document: {str(e)}"
             )
