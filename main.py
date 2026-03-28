@@ -146,7 +146,7 @@ async def query_document(query: QueryRequest):
 
     """
     try:
-        if not request.question.strip():
+        if not query.question.strip():
             raise HTTPException(status_code=400, detail="Question cannot be empty")
 
         if not os.path.exists("chroma_db"):
@@ -156,8 +156,8 @@ async def query_document(query: QueryRequest):
             )
 
         # load vector store and search
-        vector_store = load_vector_store
-        results = search_documents(request.question, vector_store, k=request.top_k)
+        vector_store = load_vector_store()
+        results = search_documents(query.question, vector_store, k=query.top_k)
 
         if not results:
             raise HTTPException(
@@ -168,12 +168,12 @@ async def query_document(query: QueryRequest):
         context = "\n\n".join([doc.page_content for doc in results])
 
         # get answer from LLM
-        answer = ask_question(request.question, context)
+        answer = ask_question(query.question, context)
 
-        logger.info(f"Answered query: {request.question[:50]}...")
+        logger.info(f"Answered query: {query.question[:50]}...")
 
         return QueryResponse(
-            question=request.question, answer=answer, sources_used=len(results)
+            question=query.question, answer=answer, sources_used=len(results)
         )
 
     except HTTPException:
@@ -183,6 +183,7 @@ async def query_document(query: QueryRequest):
         raise HTTPException(
             status_code=500, detail=f"Error querying documents: {str(e)}"
         )
+
 
 @app.get("/documents", response_model=List[DocumentInfo])
 async def list_documents():
@@ -199,7 +200,8 @@ async def list_documents():
         logger.error(f"Error listing documents: {str(e)}")
         raise HTTPException(
             status_code=500, detail=f"Error listing documents: {str(e)}"
-            )
+        )
+
 
 @app.delete("/documents/{filename}", response_model=DeleteResponse)
 async def delete_document(filename: str):
@@ -220,19 +222,19 @@ async def delete_document(filename: str):
         # delete physical file
         if os.path.exists(file_path):
             os.remove(file_path)
-        logger, info(f"Deleted file: {filename}")
+        logger.info(f"Deleted file: {filename}")
 
         if chunks_deleted == 0 and not os.path.exists(file_path):
             raise HTTPException(
                 status_code=404, detail=f"Document '{filename}' not found"
-                )
+            )
 
         return DeleteResponse(
             status="success",
             filename=filename,
             chunks_deleted=chunks_deleted,
             message=f"Successfully deleted {filename}",
-            )
+        )
 
     except HTTPException:
         raise
@@ -240,4 +242,4 @@ async def delete_document(filename: str):
         logger.error(f"Error deleting document: {str(e)}")
         raise HTTPException(
             status_code=500, detail=f"Error deleting document: {str(e)}"
-            )
+        )

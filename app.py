@@ -26,7 +26,7 @@ with st.sidebar:
                     files = {
                         "file": (uploaded_files.name, uploaded_files, "application/pdf")
                     }
-                    response = requests.post(f"{Backend_URL}/upload-pdf", files=files)
+                    response = requests.post(f"{Backend_URL}/upload-pdfs", files=files)
 
                     if response.status_code == 200:
                         data = response.json()
