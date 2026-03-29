@@ -104,7 +104,12 @@ if prompt := st.chat_input("Ask a question about your documents..."):
         with st.spinner("Thinking..."):
             try:
                 response = requests.post(
-                    f"{Backend_URL}/query", json={"question": prompt, "top_k": 3}
+                    f"{Backend_URL}/query",
+                    json={
+                        "question": prompt,
+                        "top_k": 3,
+                        "chat_history": st.session_state.messages,
+                    },
                 )
 
                 if response.status_code == 200:

@@ -20,6 +20,8 @@ IMPORTANT RULES:
 4. Always be honest about the source of your information.
 5. Never mix information from the document with your best knowledge without clearly separating them.
 
+{chat_history}
+
 Context from pdf document: {context}
 
 User question: {question}

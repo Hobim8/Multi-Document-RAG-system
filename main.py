@@ -45,6 +45,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 class QueryRequest(BaseModel):
     question: str
     top_k: int = 3
+    chat_history: List[dict] = []
 
 
 class QueryResponse(BaseModel):
@@ -149,7 +150,7 @@ async def query_document(query: QueryRequest):
         if not query.question.strip():
             raise HTTPException(status_code=400, detail="Question cannot be empty")
 
-        if not os.path.exists("chroma_db"):
+        if not os.path.exists("chromaDB"):
             raise HTTPException(
                 status_code=404,
                 detail="No document upload yet. Please upload a PDF first",
@@ -165,10 +166,10 @@ async def query_document(query: QueryRequest):
             )
 
         # combine chunk with context
-        context = "\n\n".join([doc.page_content for doc in results])
+        context = "\n\n".join([doc.page_content for doc, score in results])
 
         # get answer from LLM
-        answer = ask_question(query.question, context)
+        answer = ask_question(query.question, context, query.chat_history)
 
         logger.info(f"Answered query: {query.question[:50]}...")
 
