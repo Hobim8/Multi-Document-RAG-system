@@ -1,5 +1,5 @@
 [project]
-name = "multi-document-rag-system"
+name = "pdf_RAG_system"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
